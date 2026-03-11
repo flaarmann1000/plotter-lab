@@ -45,6 +45,10 @@ export function usePipelineRunner() {
         case "image-brightness":
         case "image-hatch":
         case "image-soft-isolines":
+        case "image-dot-grid":
+        case "image-circle-grid":
+        case "image-line-clusters":
+        case "image-triangle-grid":
         case "image-cross-hatch":
         case "image-stipple-flow":
         case "image-halftone-spiral":

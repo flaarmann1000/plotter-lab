@@ -26,6 +26,17 @@ export interface ImageTransformConfig {
   voronoiRelaxations: number;
   softLevels: number;
   softBlurRadius: number;
+  dotSpacing: number;
+  dotRadius: number;
+  circleSpacing: number;
+  circleRadius: number;
+  circleSides: number;
+  lineSpacing: number;
+  lineLength: number;
+  lineCount: number;
+  lineAngleJog: number;
+  triangleSpacing: number;
+  triangleSize: number;
 }
 
 export interface NoiseTransformConfig {

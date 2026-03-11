@@ -9,6 +9,10 @@ const IMAGE_TRANSFORMS = [
   { label: "Edge trace", value: "image-edges" },
   { label: "Tone hatching", value: "image-hatch" },
   { label: "Soft isolines", value: "image-soft-isolines" },
+  { label: "Dot grid", value: "image-dot-grid" },
+  { label: "Circle grid", value: "image-circle-grid" },
+  { label: "Parallel lines", value: "image-line-clusters" },
+  { label: "Triangle tessellation", value: "image-triangle-grid" },
   { label: "Cross hatching", value: "image-cross-hatch" },
   { label: "Gradient bands", value: "image-gradient-bands" },
   { label: "Ridgeline gradients", value: "image-ridgeline" },
@@ -280,6 +284,232 @@ export function TransformPanel() {
               onChange={(event) =>
                 updateImageConfig({
                   softBlurRadius: Number(event.target.value),
+                })
+              }
+            />
+          </Field>
+        </>
+      );
+    }
+
+    if (transform === "image-dot-grid") {
+      return (
+        <>
+          <Field
+            label="Spacing"
+            description={`${imageConfig.dotSpacing}px`}
+            htmlFor="dot-spacing"
+          >
+            <input
+              id="dot-spacing"
+              type="range"
+              min={8}
+              max={80}
+              value={imageConfig.dotSpacing}
+              onChange={(event) =>
+                updateImageConfig({
+                  dotSpacing: Number(event.target.value),
+                })
+              }
+            />
+          </Field>
+          <Field
+            label="Max radius"
+            description={`${imageConfig.dotRadius}px`}
+            htmlFor="dot-radius"
+          >
+            <input
+              id="dot-radius"
+              type="range"
+              min={1}
+              max={20}
+              value={imageConfig.dotRadius}
+              onChange={(event) =>
+                updateImageConfig({
+                  dotRadius: Number(event.target.value),
+                })
+              }
+            />
+          </Field>
+        </>
+      );
+    }
+
+    if (transform === "image-circle-grid") {
+      return (
+        <>
+          <Field
+            label="Spacing"
+            description={`${imageConfig.circleSpacing}px`}
+            htmlFor="circle-spacing"
+          >
+            <input
+              id="circle-spacing"
+              type="range"
+              min={10}
+              max={120}
+              value={imageConfig.circleSpacing}
+              onChange={(event) =>
+                updateImageConfig({
+                  circleSpacing: Number(event.target.value),
+                })
+              }
+            />
+          </Field>
+          <Field
+            label="Radius"
+            description={`${imageConfig.circleRadius}px`}
+            htmlFor="circle-radius"
+          >
+            <input
+              id="circle-radius"
+              type="range"
+              min={2}
+              max={40}
+              value={imageConfig.circleRadius}
+              onChange={(event) =>
+                updateImageConfig({
+                  circleRadius: Number(event.target.value),
+                })
+              }
+            />
+          </Field>
+          <Field
+            label="Sides"
+            description={`${imageConfig.circleSides}`}
+            htmlFor="circle-sides"
+          >
+            <input
+              id="circle-sides"
+              type="range"
+              min={6}
+              max={60}
+              value={imageConfig.circleSides}
+              onChange={(event) =>
+                updateImageConfig({
+                  circleSides: Number(event.target.value),
+                })
+              }
+            />
+          </Field>
+        </>
+      );
+    }
+
+    if (transform === "image-line-clusters") {
+      return (
+        <>
+          <Field
+            label="Grid spacing"
+            description={`${imageConfig.lineSpacing}px`}
+            htmlFor="line-spacing"
+          >
+            <input
+              id="line-spacing"
+              type="range"
+              min={10}
+              max={120}
+              value={imageConfig.lineSpacing}
+              onChange={(event) =>
+                updateImageConfig({
+                  lineSpacing: Number(event.target.value),
+                })
+              }
+            />
+          </Field>
+          <Field
+            label="Line length"
+            description={`${imageConfig.lineLength}px`}
+            htmlFor="line-length"
+          >
+            <input
+              id="line-length"
+              type="range"
+              min={4}
+              max={120}
+              value={imageConfig.lineLength}
+              onChange={(event) =>
+                updateImageConfig({
+                  lineLength: Number(event.target.value),
+                })
+              }
+            />
+          </Field>
+          <Field
+            label="Lines per cluster"
+            description={`${imageConfig.lineCount}`}
+            htmlFor="line-count"
+          >
+            <input
+              id="line-count"
+              type="range"
+              min={2}
+              max={12}
+              value={imageConfig.lineCount}
+              onChange={(event) =>
+                updateImageConfig({
+                  lineCount: Number(event.target.value),
+                })
+              }
+            />
+          </Field>
+          <Field
+            label="Angle jog"
+            description={`${imageConfig.lineAngleJog.toFixed(0)}°`}
+            htmlFor="line-angle"
+          >
+            <input
+              id="line-angle"
+              type="range"
+              min={0}
+              max={45}
+              value={imageConfig.lineAngleJog}
+              onChange={(event) =>
+                updateImageConfig({
+                  lineAngleJog: Number(event.target.value),
+                })
+              }
+            />
+          </Field>
+        </>
+      );
+    }
+
+    if (transform === "image-triangle-grid") {
+      return (
+        <>
+          <Field
+            label="Spacing"
+            description={`${imageConfig.triangleSpacing}px`}
+            htmlFor="tri-spacing"
+          >
+            <input
+              id="tri-spacing"
+              type="range"
+              min={10}
+              max={160}
+              value={imageConfig.triangleSpacing}
+              onChange={(event) =>
+                updateImageConfig({
+                  triangleSpacing: Number(event.target.value),
+                })
+              }
+            />
+          </Field>
+          <Field
+            label="Size"
+            description={`${imageConfig.triangleSize}px`}
+            htmlFor="tri-size"
+          >
+            <input
+              id="tri-size"
+              type="range"
+              min={4}
+              max={80}
+              value={imageConfig.triangleSize}
+              onChange={(event) =>
+                updateImageConfig({
+                  triangleSize: Number(event.target.value),
                 })
               }
             />

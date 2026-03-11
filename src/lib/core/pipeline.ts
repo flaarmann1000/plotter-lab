@@ -8,6 +8,12 @@ import { generateVoronoiPolylines } from "./transforms/voronoi";
 import { buildWaveformPolylines, buildPolarSpectrum, buildTemporalRibbon } from "./transforms/waveform";
 import { buildInterferenceField } from "./fields/interference";
 import { blurScalarField } from "./fields/blur";
+import {
+  generateCircleGrid,
+  generateDotGrid,
+  generateLineClusters,
+  generateTriangleGrid,
+} from "./transforms/shapeGrids";
 import { computePlotStats } from "./plot/stats";
 import { OptimizationSettings, optimizeDocument } from "./plot/optimize";
 import {
@@ -169,6 +175,62 @@ export async function buildPlotDocument(
     };
     docWidth = softened.width;
     docHeight = softened.height;
+  } else if (transform === "image-dot-grid") {
+    ensureField(imageField, "Load an image to place dot grid.");
+    const polylines = generateDotGrid(imageField, {
+      spacing: imageConfig.dotSpacing,
+      radius: imageConfig.dotRadius,
+      sides: imageConfig.circleSides,
+    });
+    baseLayer = {
+      ...baseLayer,
+      name: "Dot grid",
+      polylines,
+    };
+    docWidth = imageField.width;
+    docHeight = imageField.height;
+  } else if (transform === "image-circle-grid") {
+    ensureField(imageField, "Load an image for circular grid.");
+    const polylines = generateCircleGrid(imageField, {
+      spacing: imageConfig.circleSpacing,
+      radius: imageConfig.circleRadius,
+      sides: imageConfig.circleSides,
+    });
+    baseLayer = {
+      ...baseLayer,
+      name: "Circle grid",
+      polylines,
+    };
+    docWidth = imageField.width;
+    docHeight = imageField.height;
+  } else if (transform === "image-line-clusters") {
+    ensureField(imageField, "Load an image for line clusters.");
+    const polylines = generateLineClusters(imageField, {
+      spacing: imageConfig.lineSpacing,
+      length: imageConfig.lineLength,
+      count: imageConfig.lineCount,
+      angleJog: imageConfig.lineAngleJog,
+    });
+    baseLayer = {
+      ...baseLayer,
+      name: "Parallel lines",
+      polylines,
+    };
+    docWidth = imageField.width;
+    docHeight = imageField.height;
+  } else if (transform === "image-triangle-grid") {
+    ensureField(imageField, "Load an image for triangle tessellation.");
+    const polylines = generateTriangleGrid(imageField, {
+      spacing: imageConfig.triangleSpacing,
+      size: imageConfig.triangleSize,
+    });
+    baseLayer = {
+      ...baseLayer,
+      name: "Triangle grid",
+      polylines,
+    };
+    docWidth = imageField.width;
+    docHeight = imageField.height;
   } else if (transform === "image-cross-hatch") {
     ensureField(imageField, "Load an image for cross hatching.");
     const polylines = generateCrossHatch(imageField, {

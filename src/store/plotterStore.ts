@@ -112,6 +112,17 @@ const defaultImageConfig: ImageTransformConfig = {
   voronoiRelaxations: 1,
   softLevels: 8,
   softBlurRadius: 6,
+  dotSpacing: 20,
+  dotRadius: 4,
+  circleSpacing: 28,
+  circleRadius: 8,
+  circleSides: 20,
+  lineSpacing: 32,
+  lineLength: 35,
+  lineCount: 4,
+  lineAngleJog: 12,
+  triangleSpacing: 40,
+  triangleSize: 18,
 };
 
 const defaultNoiseTransform: NoiseTransformConfig = {
