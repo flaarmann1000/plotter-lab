@@ -24,6 +24,8 @@ export interface ImageTransformConfig {
   halftoneDensity: number;
   voronoiPoints: number;
   voronoiRelaxations: number;
+  softLevels: number;
+  softBlurRadius: number;
 }
 
 export interface NoiseTransformConfig {

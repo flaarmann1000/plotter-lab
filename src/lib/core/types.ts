@@ -10,6 +10,7 @@ export type TransformMode =
   | "image-stipple-flow"
   | "image-halftone-spiral"
   | "image-voronoi"
+  | "image-soft-isolines"
   | "noise-isolines"
   | "noise-wave-interference"
   | "audio-waveform"

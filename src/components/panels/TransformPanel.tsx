@@ -8,6 +8,7 @@ const IMAGE_TRANSFORMS = [
   { label: "Brightness isolines", value: "image-brightness" },
   { label: "Edge trace", value: "image-edges" },
   { label: "Tone hatching", value: "image-hatch" },
+  { label: "Soft isolines", value: "image-soft-isolines" },
   { label: "Cross hatching", value: "image-cross-hatch" },
   { label: "Gradient bands", value: "image-gradient-bands" },
   { label: "Ridgeline gradients", value: "image-ridgeline" },
@@ -236,6 +237,49 @@ export function TransformPanel() {
               onChange={(event) =>
                 updateImageConfig({
                   hatchSampleStep: Number(event.target.value),
+                })
+              }
+            />
+          </Field>
+        </>
+      );
+    }
+
+    if (transform === "image-soft-isolines") {
+      return (
+        <>
+          <Field
+            label="Levels"
+            description={`${imageConfig.softLevels}`}
+            htmlFor="soft-levels"
+          >
+            <input
+              id="soft-levels"
+              type="range"
+              min={2}
+              max={32}
+              value={imageConfig.softLevels}
+              onChange={(event) =>
+                updateImageConfig({
+                  softLevels: Number(event.target.value),
+                })
+              }
+            />
+          </Field>
+          <Field
+            label="Blur radius"
+            description={`${imageConfig.softBlurRadius}px`}
+            htmlFor="soft-radius"
+          >
+            <input
+              id="soft-radius"
+              type="range"
+              min={1}
+              max={40}
+              value={imageConfig.softBlurRadius}
+              onChange={(event) =>
+                updateImageConfig({
+                  softBlurRadius: Number(event.target.value),
                 })
               }
             />

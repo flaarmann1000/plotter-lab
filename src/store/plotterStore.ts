@@ -110,6 +110,8 @@ const defaultImageConfig: ImageTransformConfig = {
   halftoneDensity: 0.7,
   voronoiPoints: 180,
   voronoiRelaxations: 1,
+  softLevels: 8,
+  softBlurRadius: 6,
 };
 
 const defaultNoiseTransform: NoiseTransformConfig = {

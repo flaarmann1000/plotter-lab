@@ -44,6 +44,7 @@ export function usePipelineRunner() {
       switch (transform) {
         case "image-brightness":
         case "image-hatch":
+        case "image-soft-isolines":
         case "image-cross-hatch":
         case "image-stipple-flow":
         case "image-halftone-spiral":

@@ -7,6 +7,7 @@ import { generateHalftoneSpiral } from "./transforms/halftoneSpiral";
 import { generateVoronoiPolylines } from "./transforms/voronoi";
 import { buildWaveformPolylines, buildPolarSpectrum, buildTemporalRibbon } from "./transforms/waveform";
 import { buildInterferenceField } from "./fields/interference";
+import { blurScalarField } from "./fields/blur";
 import { computePlotStats } from "./plot/stats";
 import { OptimizationSettings, optimizeDocument } from "./plot/optimize";
 import {
@@ -146,6 +147,28 @@ export async function buildPlotDocument(
     };
     docWidth = gradientField.width;
     docHeight = gradientField.height;
+  } else if (transform === "image-soft-isolines") {
+    ensureField(imageField, "Load an image first to run softened isolines.");
+    const softened = blurScalarField(imageField, imageConfig.softBlurRadius);
+    const minValue = Math.min(imageConfig.low, imageConfig.high);
+    const maxValue = Math.max(imageConfig.low, imageConfig.high);
+    const thresholds = linspace(
+      minValue,
+      maxValue,
+      Math.max(1, imageConfig.softLevels),
+    );
+    const polylines = await contourRunner({
+      field: softened,
+      thresholds,
+      smoothing: 1,
+    });
+    baseLayer = {
+      ...baseLayer,
+      name: "Smoothed isolines",
+      polylines,
+    };
+    docWidth = softened.width;
+    docHeight = softened.height;
   } else if (transform === "image-cross-hatch") {
     ensureField(imageField, "Load an image for cross hatching.");
     const polylines = generateCrossHatch(imageField, {
