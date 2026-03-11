@@ -61,8 +61,8 @@ export function TransformPanel() {
             <input
               id="image-levels"
               type="range"
-              min={2}
-              max={16}
+              min={1}
+              max={32}
               value={imageConfig.levels}
               onChange={(event) =>
                 updateImageConfig({ levels: Number(event.target.value) })
@@ -78,7 +78,7 @@ export function TransformPanel() {
               id="image-low"
               type="range"
               min={0}
-              max={0.8}
+              max={0.95}
               step={0.01}
               value={imageConfig.low}
               onChange={(event) =>
@@ -94,7 +94,7 @@ export function TransformPanel() {
             <input
               id="image-high"
               type="range"
-              min={0.2}
+              min={0}
               max={1}
               step={0.01}
               value={imageConfig.high}
@@ -135,8 +135,8 @@ export function TransformPanel() {
             <input
               id="edge-threshold"
               type="range"
-              min={0.1}
-              max={0.95}
+              min={0}
+              max={1}
               step={0.01}
               value={imageConfig.edgeThreshold}
               onChange={(event) =>
@@ -153,7 +153,7 @@ export function TransformPanel() {
               id="edge-smoothing"
               type="range"
               min={0}
-              max={1}
+              max={1.25}
               step={0.05}
               value={imageConfig.smoothing}
               onChange={(event) =>
@@ -176,8 +176,8 @@ export function TransformPanel() {
             <input
               id="hatch-spacing"
               type="range"
-              min={4}
-              max={32}
+              min={2}
+              max={80}
               value={imageConfig.hatchSpacing}
               onChange={(event) =>
                 updateImageConfig({ hatchSpacing: Number(event.target.value) })
@@ -192,8 +192,8 @@ export function TransformPanel() {
             <input
               id="hatch-threshold"
               type="range"
-              min={0.1}
-              max={0.95}
+              min={0}
+              max={1}
               step={0.01}
               value={imageConfig.hatchThreshold}
               onChange={(event) =>
@@ -212,7 +212,7 @@ export function TransformPanel() {
               id="hatch-amp"
               type="range"
               min={0}
-              max={20}
+              max={40}
               step={0.5}
               value={imageConfig.hatchAmplitude}
               onChange={(event) =>
@@ -231,7 +231,7 @@ export function TransformPanel() {
               id="hatch-sample"
               type="range"
               min={1}
-              max={6}
+              max={12}
               value={imageConfig.hatchSampleStep}
               onChange={(event) =>
                 updateImageConfig({
@@ -255,8 +255,8 @@ export function TransformPanel() {
             <input
               id="cross-families"
               type="range"
-              min={2}
-              max={5}
+              min={1}
+              max={8}
               value={imageConfig.crossHatchFamilies}
               onChange={(event) =>
                 updateImageConfig({
@@ -273,8 +273,8 @@ export function TransformPanel() {
             <input
               id="cross-angle"
               type="range"
-              min={10}
-              max={60}
+              min={5}
+              max={90}
               value={imageConfig.crossHatchAngleDelta}
               onChange={(event) =>
                 updateImageConfig({
@@ -291,8 +291,8 @@ export function TransformPanel() {
             <input
               id="cross-spacing"
               type="range"
-              min={4}
-              max={28}
+              min={2}
+              max={80}
               value={imageConfig.hatchSpacing}
               onChange={(event) =>
                 updateImageConfig({ hatchSpacing: Number(event.target.value) })
@@ -315,7 +315,7 @@ export function TransformPanel() {
               id="gradient-levels"
               type="range"
               min={2}
-              max={12}
+              max={24}
               value={imageConfig.gradientLevels}
               onChange={(event) =>
                 updateImageConfig({
@@ -333,7 +333,7 @@ export function TransformPanel() {
               id="gradient-low"
               type="range"
               min={0}
-              max={0.9}
+              max={1}
               step={0.01}
               value={imageConfig.gradientLow}
               onChange={(event) =>
@@ -351,7 +351,7 @@ export function TransformPanel() {
             <input
               id="gradient-high"
               type="range"
-              min={0.1}
+              min={0}
               max={1}
               step={0.01}
               value={imageConfig.gradientHigh}
@@ -371,7 +371,7 @@ export function TransformPanel() {
               id="gradient-smoothing"
               type="range"
               min={0}
-              max={1}
+              max={1.5}
               step={0.05}
               value={imageConfig.smoothing}
               onChange={(event) =>
@@ -395,7 +395,7 @@ export function TransformPanel() {
               id="ridge-levels"
               type="range"
               min={2}
-              max={12}
+              max={24}
               value={imageConfig.gradientLevels}
               onChange={(event) =>
                 updateImageConfig({
@@ -413,7 +413,7 @@ export function TransformPanel() {
               id="ridge-smoothing"
               type="range"
               min={0}
-              max={1}
+              max={1.5}
               step={0.05}
               value={imageConfig.smoothing}
               onChange={(event) =>
@@ -436,8 +436,8 @@ export function TransformPanel() {
             <input
               id="flow-spacing"
               type="range"
-              min={6}
-              max={32}
+              min={2}
+              max={64}
               value={imageConfig.flowSpacing}
               onChange={(event) =>
                 updateImageConfig({ flowSpacing: Number(event.target.value) })
@@ -452,8 +452,8 @@ export function TransformPanel() {
             <input
               id="flow-length"
               type="range"
-              min={20}
-              max={120}
+              min={10}
+              max={240}
               value={imageConfig.flowLength}
               onChange={(event) =>
                 updateImageConfig({ flowLength: Number(event.target.value) })
@@ -469,7 +469,7 @@ export function TransformPanel() {
               id="flow-step"
               type="range"
               min={1}
-              max={10}
+              max={20}
               value={imageConfig.flowStep}
               onChange={(event) =>
                 updateImageConfig({ flowStep: Number(event.target.value) })
@@ -484,8 +484,8 @@ export function TransformPanel() {
             <input
               id="flow-threshold"
               type="range"
-              min={0.2}
-              max={0.95}
+              min={0}
+              max={1}
               step={0.01}
               value={imageConfig.flowThreshold}
               onChange={(event) =>
@@ -508,8 +508,8 @@ export function TransformPanel() {
             <input
               id="halftone-turns"
               type="range"
-              min={5}
-              max={60}
+              min={1}
+              max={120}
               value={imageConfig.halftoneTurns}
               onChange={(event) =>
                 updateImageConfig({
@@ -526,8 +526,8 @@ export function TransformPanel() {
             <input
               id="halftone-density"
               type="range"
-              min={0.2}
-              max={1.5}
+              min={0.1}
+              max={2.5}
               step={0.05}
               value={imageConfig.halftoneDensity}
               onChange={(event) =>
@@ -552,8 +552,8 @@ export function TransformPanel() {
             <input
               id="voronoi-points"
               type="range"
-              min={50}
-              max={500}
+              min={20}
+              max={1000}
               step={10}
               value={imageConfig.voronoiPoints}
               onChange={(event) =>
@@ -572,7 +572,7 @@ export function TransformPanel() {
               id="voronoi-relax"
               type="range"
               min={0}
-              max={3}
+              max={6}
               value={imageConfig.voronoiRelaxations}
               onChange={(event) =>
                 updateImageConfig({
@@ -596,8 +596,8 @@ export function TransformPanel() {
             <input
               id="noise-levels"
               type="range"
-              min={2}
-              max={20}
+              min={1}
+              max={40}
               value={noiseConfig.thresholds}
               onChange={(event) =>
                 updateNoiseTransform({ thresholds: Number(event.target.value) })
@@ -613,7 +613,7 @@ export function TransformPanel() {
               id="noise-smoothing"
               type="range"
               min={0}
-              max={1}
+              max={1.5}
               step={0.05}
               value={noiseConfig.smoothing}
               onChange={(event) =>
@@ -671,8 +671,8 @@ export function TransformPanel() {
             <input
               id="interference-scale"
               type="range"
-              min={40}
-              max={400}
+              min={20}
+              max={800}
               step={10}
               value={noiseConfig.secondaryScale}
               onChange={(event) =>
@@ -691,7 +691,7 @@ export function TransformPanel() {
               id="interference-octaves"
               type="range"
               min={1}
-              max={6}
+              max={8}
               value={noiseConfig.secondaryOctaves}
               onChange={(event) =>
                 updateNoiseTransform({
@@ -732,8 +732,8 @@ export function TransformPanel() {
             <input
               id="waveform-points"
               type="range"
-              min={200}
-              max={4000}
+              min={100}
+              max={8000}
               step={100}
               value={waveformConfig.samplePoints}
               onChange={(event) =>
@@ -749,8 +749,8 @@ export function TransformPanel() {
             <input
               id="waveform-amp"
               type="range"
-              min={0.1}
-              max={1.5}
+              min={0.05}
+              max={3}
               step={0.05}
               value={waveformConfig.amplitude}
               onChange={(event) =>
@@ -767,8 +767,8 @@ export function TransformPanel() {
               id="waveform-smoothing"
               type="range"
               min={1}
-              max={9}
-              step={2}
+              max={15}
+              step={1}
               value={waveformConfig.smoothingWindow}
               onChange={(event) =>
                 updateWaveformConfig({
@@ -787,8 +787,8 @@ export function TransformPanel() {
                 <input
                   id="stacked-count"
                   type="range"
-                  min={2}
-                  max={8}
+              min={2}
+              max={16}
                   value={waveformConfig.lineCount}
                   onChange={(event) =>
                     updateWaveformConfig({
@@ -805,8 +805,8 @@ export function TransformPanel() {
                 <input
                   id="stacked-spacing"
                   type="range"
-                  min={30}
-                  max={160}
+              min={20}
+              max={240}
                   step={5}
                   value={waveformConfig.stackSpacing}
                   onChange={(event) =>
@@ -827,8 +827,8 @@ export function TransformPanel() {
               <input
                 id="circle-radius"
                 type="range"
-                min={0.1}
-                max={0.45}
+              min={0.05}
+              max={0.75}
                 step={0.02}
                 value={waveformConfig.circleRadiusRatio}
                 onChange={(event) =>
@@ -849,8 +849,8 @@ export function TransformPanel() {
                 <input
                   id="spiral-turns"
                   type="range"
-                  min={2}
-                  max={12}
+              min={1}
+              max={24}
                   value={waveformConfig.spiralTurns}
                   onChange={(event) =>
                     updateWaveformConfig({
@@ -869,8 +869,8 @@ export function TransformPanel() {
                 <input
                   id="spiral-inner"
                   type="range"
-                  min={0.05}
-                  max={0.4}
+              min={0.02}
+              max={0.6}
                   step={0.01}
                   value={waveformConfig.spiralInnerRatio}
                   onChange={(event) =>
@@ -890,8 +890,8 @@ export function TransformPanel() {
                 <input
                   id="spiral-outer"
                   type="range"
-                  min={0.2}
-                  max={0.9}
+              min={0.3}
+              max={0.98}
                   step={0.01}
                   value={waveformConfig.spiralOuterRatio}
                   onChange={(event) =>
@@ -918,8 +918,8 @@ export function TransformPanel() {
             <input
               id="spectrum-bins"
               type="range"
-              min={8}
-              max={48}
+              min={6}
+              max={96}
               value={waveformConfig.spectrumBins}
               onChange={(event) =>
                 updateWaveformConfig({
@@ -938,8 +938,8 @@ export function TransformPanel() {
             <input
               id="spectrum-radius"
               type="range"
-              min={0.1}
-              max={0.6}
+              min={0.05}
+              max={0.85}
               step={0.02}
               value={waveformConfig.spectrumRadiusRatio}
               onChange={(event) =>
@@ -981,8 +981,8 @@ export function TransformPanel() {
             <input
               id="ribbon-layers"
               type="range"
-              min={3}
-              max={24}
+              min={2}
+              max={48}
               value={waveformConfig.ribbonLayers}
               onChange={(event) =>
                 updateWaveformConfig({
@@ -999,8 +999,8 @@ export function TransformPanel() {
             <input
               id="ribbon-offset"
               type="range"
-              min={6}
-              max={40}
+              min={0}
+              max={80}
               value={waveformConfig.ribbonOffset}
               onChange={(event) =>
                 updateWaveformConfig({
@@ -1018,7 +1018,7 @@ export function TransformPanel() {
               id="ribbon-drift"
               type="range"
               min={0}
-              max={40}
+              max={80}
               step={1}
               value={waveformConfig.ribbonDrift}
               onChange={(event) =>

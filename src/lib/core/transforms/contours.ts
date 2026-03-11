@@ -1,4 +1,5 @@
 import { contours as d3Contours } from "d3-contour";
+import type { ContourMultiPolygon } from "d3-contour";
 import { Polyline, ScalarField } from "../types";
 
 export interface ContourTaskInput {
@@ -15,14 +16,17 @@ export function generateContourPolylines({
   if (!thresholds.length) return [];
   const contourGenerator = d3Contours()
     .size([field.width, field.height])
-    .smooth(Math.min(Math.max(smoothing, 0), 1));
+    .smooth(smoothing > 0.5);
+  const scalarValues = Array.from(field.data);
 
   const lines: Polyline[] = [];
 
   thresholds.forEach((threshold, tIndex) => {
-    const contour = contourGenerator.contour(field.data, threshold);
-    const coordinates = contour.coordinates as number[][][];
-    coordinates.forEach((multi, multiIndex) => {
+    const contour = contourGenerator.contour(
+      scalarValues,
+      threshold,
+    ) as ContourMultiPolygon;
+    contour.coordinates.forEach((multi, multiIndex) => {
       multi.forEach((ring, ringIndex) => {
         const points = ring.map(([x, y]) => ({ x, y }));
         if (points.length > 1) {
@@ -39,4 +43,3 @@ export function generateContourPolylines({
 
   return lines;
 }
-

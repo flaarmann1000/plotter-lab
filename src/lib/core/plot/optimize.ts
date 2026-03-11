@@ -66,7 +66,10 @@ export function simplifyPolyline(
   return { ...polyline, points: resultPoints };
 }
 
-function rdpSimplify(points: Polyline["points"], epsilon: number) {
+function rdpSimplify(
+  points: Polyline["points"],
+  epsilon: number,
+): Polyline["points"] {
   if (points.length <= 2) {
     return points;
   }
