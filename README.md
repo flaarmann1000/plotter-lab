@@ -88,6 +88,16 @@ Input Source
 
 This makes it easier to add new generators and transformations later without rewriting export logic.
 
+## Node editor direction
+
+Plotter Lab is evolving into a node-based editor with typed ports and categories. The graph is organized into three lanes:
+
+1. **Lane A – Data generation:** sources, conversions, scalar/vector fields, masks, audio analysis.
+2. **Lane B – Geometry generation:** contouring, waveform rendering, hatch/flow systems, path modification.
+3. **Lane C – Plot optimization:** cleanup, ordering, layout, layering, previews, and exports.
+
+All node ports use the shared `NodeValueKind` union defined in `src/lib/core/types.ts`, and the complete catalog of 80+ nodes (including maturity flags for MVP, second-wave, and advanced stages) lives in `src/lib/core/nodes/library.ts`. See `docs/node-editor.md` for the detailed briefing, port color recommendations, and rollout plan. The current brightness isolines, noise contours, waveform renderer, optimizer, and SVG exporter map directly onto their corresponding nodes so v1 behavior remains intact while the editor gains room to grow.
+
 ## Project structure
 
 ```text

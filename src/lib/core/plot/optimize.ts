@@ -116,7 +116,7 @@ function perpendicularDistance(point: { x: number; y: number }, start: {
   return numerator / denominator;
 }
 
-function orderByNearestNeighbor(
+export function orderByNearestNeighbor(
   polylines: Polyline[],
   joinTolerance: number,
 ): Polyline[] {
@@ -170,14 +170,14 @@ function orderByNearestNeighbor(
   return ordered;
 }
 
-function reversePolyline(polyline: Polyline): Polyline {
+export function reversePolyline(polyline: Polyline): Polyline {
   return {
     ...polyline,
     points: [...polyline.points].reverse(),
   };
 }
 
-function joinPolylines(a: Polyline, b: Polyline): Polyline {
+export function joinPolylines(a: Polyline, b: Polyline): Polyline {
   return {
     ...a,
     id: `${a.id}-${b.id}`,

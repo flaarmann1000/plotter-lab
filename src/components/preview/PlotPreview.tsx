@@ -3,7 +3,6 @@
 import { useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { usePlotterStore } from "@/store/plotterStore";
-import { getPlotPlacement } from "@/lib/core/export/layout";
 
 interface PathShape {
   id: string;
@@ -15,7 +14,6 @@ export function PlotPreview() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const document = usePlotterStore((state) => state.document);
   const stats = usePlotterStore((state) => state.stats);
-  const plotConfig = usePlotterStore((state) => state.plotConfig);
   const status = usePlotterStore((state) => state.status);
 
   const [zoom, setZoom] = useState(1);
@@ -29,11 +27,14 @@ export function PlotPreview() {
 
   const placement = useMemo(() => {
     if (!document) return null;
-    return getPlotPlacement(document, plotConfig.page, {
-      marginMm: plotConfig.marginMm,
-      scale: plotConfig.scale,
-    });
-  }, [document, plotConfig.page, plotConfig.marginMm, plotConfig.scale]);
+    return {
+      pageWidth: document.width,
+      pageHeight: document.height,
+      scale: 1,
+      offsetX: 0,
+      offsetY: 0,
+    };
+  }, [document]);
 
   const shapes = useMemo<PathShape[]>(() => {
     if (!document || !placement) return [];
@@ -167,7 +168,7 @@ export function PlotPreview() {
             />
             <g
               transform={`translate(${pan.x} ${pan.y}) scale(${zoom})`}
-              strokeWidth={plotConfig.strokeWidth}
+              strokeWidth={0.3}
               strokeLinecap="round"
               strokeLinejoin="round"
               fill="none"

@@ -1,28 +1,15 @@
+
 import { useEffect, useRef } from "react";
-import { buildPlotDocument } from "@/lib/core/pipeline";
 import { ContourWorkerClient } from "@/lib/workers/contourClient";
 import { generateContourPolylines } from "@/lib/core/transforms/contours";
+import { executeNodeGraph, NodeAssetRecord } from "@/lib/core/nodes/runtime";
 import { usePlotterStore } from "@/store/plotterStore";
 
 export function usePipelineRunner() {
-  const transform = usePlotterStore((state) => state.transform);
-  const imageField = usePlotterStore((state) => state.image.grayscale);
-  const gradientField = usePlotterStore((state) => state.image.gradient);
-  const imageVersion = usePlotterStore((state) => state.image.version);
-  const noiseField = usePlotterStore((state) => state.noise.field);
-  const noiseVersion = usePlotterStore((state) => state.noise.version);
-  const noiseFieldConfig = usePlotterStore(
-    (state) => state.noise.fieldConfig,
-  );
-  const noiseConfig = usePlotterStore(
-    (state) => state.noise.transformConfig,
-  );
-  const audioSignal = usePlotterStore((state) => state.audio.signal);
-  const audioVersion = usePlotterStore((state) => state.audio.version);
-  const imageConfig = usePlotterStore((state) => state.imageConfig);
-  const waveformConfig = usePlotterStore((state) => state.waveformConfig);
-  const plotConfig = usePlotterStore((state) => state.plotConfig);
-  const setDocument = usePlotterStore((state) => state.setDocument);
+  const graph = usePlotterStore((state) => state.graph);
+  const graphVersion = usePlotterStore((state) => state.graphVersion);
+  const assets = usePlotterStore((state) => state.assets);
+  const setNodeStates = usePlotterStore((state) => state.setNodeStates);
   const setStatus = usePlotterStore((state) => state.setStatus);
   const setError = usePlotterStore((state) => state.setError);
 
@@ -40,41 +27,6 @@ export function usePipelineRunner() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const ready = (() => {
-      switch (transform) {
-        case "image-brightness":
-        case "image-hatch":
-        case "image-soft-isolines":
-        case "image-dot-grid":
-        case "image-circle-grid":
-        case "image-line-clusters":
-        case "image-triangle-grid":
-        case "image-cross-hatch":
-        case "image-stipple-flow":
-        case "image-halftone-spiral":
-        case "image-voronoi":
-          return Boolean(imageField);
-        case "image-edges":
-        case "image-gradient-bands":
-        case "image-ridgeline":
-          return Boolean(gradientField);
-        case "noise-isolines":
-        case "noise-wave-interference":
-          return Boolean(noiseField);
-        case "audio-waveform":
-        case "audio-polar-spectrum":
-        case "audio-ribbon":
-          return Boolean(audioSignal);
-        default:
-          return false;
-      }
-    })();
-
-    if (!ready) {
-      setDocument(undefined, undefined);
-      return;
-    }
-
     let cancelled = false;
     const contourRunner = (payload: Parameters<typeof generateContourPolylines>[0]) => {
       const client = contourClientRef.current;
@@ -83,55 +35,26 @@ export function usePipelineRunner() {
       }
       return Promise.resolve(generateContourPolylines(payload));
     };
-
     const run = async () => {
       setStatus("computing");
       try {
-        const result = await buildPlotDocument({
-          transform,
-          imageField,
-          gradientField,
-          noiseField,
-          audioSignal,
-          noiseFieldConfig,
-          imageConfig,
-          noiseConfig,
-          waveformConfig,
-          plotConfig,
-          contourRunner,
+        const result = await executeNodeGraph(graph, {
+          assets: assets as NodeAssetRecord,
+          extras: { contourRunner },
         });
         if (!cancelled) {
-          setDocument(result.document, result.stats);
-          setStatus("idle");
+          setNodeStates(result);
         }
       } catch (error) {
         if (!cancelled) {
-          setError(error instanceof Error ? error.message : "Failed to run pipeline.");
+          setError(error instanceof Error ? error.message : "Failed to evaluate node graph.");
           setStatus("idle");
         }
       }
     };
-
     run();
     return () => {
       cancelled = true;
     };
-  }, [
-    transform,
-    imageField,
-    gradientField,
-    noiseField,
-    audioSignal,
-    imageConfig,
-    noiseConfig,
-    noiseFieldConfig,
-    waveformConfig,
-    plotConfig,
-    imageVersion,
-    noiseVersion,
-    audioVersion,
-    setDocument,
-    setStatus,
-    setError,
-  ]);
+  }, [graph, graphVersion, assets, setNodeStates, setStatus, setError]);
 }

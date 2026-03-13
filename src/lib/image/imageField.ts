@@ -1,4 +1,4 @@
-import { ScalarField } from "../core/types";
+import { ImagePixels, ScalarField } from "../core/types";
 
 export interface ImageFieldMetadata {
   width: number;
@@ -10,6 +10,7 @@ export interface ImageFieldResult {
   grayscale: ScalarField;
   gradient: ScalarField;
   metadata: ImageFieldMetadata;
+  pixels: ImagePixels;
 }
 
 interface ImageFieldOptions {
@@ -54,6 +55,13 @@ export async function imageFileToFields(
 
   const gradient = computeSobelGradient(grayscale, width, height);
 
+  const pixels: ImagePixels = {
+    width,
+    height,
+    channels: 4,
+    data: new Uint8ClampedArray(imageData.data),
+  };
+
   return {
     grayscale: { width, height, data: grayscale },
     gradient: { width, height, data: gradient },
@@ -62,6 +70,7 @@ export async function imageFileToFields(
       height: bitmap.height,
       histogram,
     },
+    pixels,
   };
 }
 
@@ -142,4 +151,3 @@ function computeSobelGradient(
 
   return gradient;
 }
-

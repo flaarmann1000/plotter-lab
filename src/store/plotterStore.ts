@@ -1,265 +1,298 @@
 import { create } from "zustand";
-import { ImageFieldResult, imageFileToFields } from "@/lib/image/imageField";
-import { decodeAudioFile } from "@/lib/audio/wav";
 import {
-  ImageTransformConfig,
-  NoiseTransformConfig,
-  PlotControlConfig,
-  WaveformRenderConfig,
-} from "@/lib/core/config";
-import { generateNoiseField, NoiseFieldConfig } from "@/lib/core/fields/noiseField";
-import {
+  GraphEvaluationResult,
+  GraphEdge,
+  GraphPreset,
+  NodeGraph,
+  NodeInstance,
+  NodeRuntimeState,
+  NodeLane,
   PlotDocument,
   PlotStats,
-  ScalarField,
-  SampledSignal,
-  SourceKind,
-  TransformMode,
 } from "@/lib/core/types";
-import { PageConfig } from "@/lib/core/export/pagePresets";
+import { nodeLibrary } from "@/lib/core/nodes/library";
+import { graphPresets } from "@/lib/core/nodes/presets";
+import { imageFileToFields, ImageFieldResult } from "@/lib/image/imageField";
+import { decodeAudioFile } from "@/lib/audio/wav";
+import { SampledSignal } from "@/lib/core/types";
 
-type Status = "idle" | "loading" | "computing";
+export type Status = "idle" | "loading" | "computing";
 
-interface ImageState extends Partial<ImageFieldResult> {
-  version: number;
+interface NodeAssetEntry {
+  image?: ImageFieldResult;
+  audio?: SampledSignal;
 }
 
-interface NoiseState {
-  field?: ScalarField;
-  fieldConfig: NoiseFieldConfig;
-  transformConfig: NoiseTransformConfig;
-  version: number;
-}
-
-interface AudioState {
-  signal?: SampledSignal;
-  version: number;
+export interface NodePosition {
+  x: number;
+  y: number;
 }
 
 interface PlotterStoreState {
-  sourceKind: SourceKind;
-  transform: TransformMode;
   status: Status;
   error?: string;
+  graph: NodeGraph;
+  presets: GraphPreset[];
+  selectedNodeId?: string;
+  assets: Record<string, NodeAssetEntry>;
+  nodeStates: Record<string, NodeRuntimeState>;
+  nodePositions: Record<string, NodePosition>;
   document?: PlotDocument;
   stats?: PlotStats;
-
-  image: ImageState;
-  noise: NoiseState;
-  audio: AudioState;
-
-  imageConfig: ImageTransformConfig;
-  waveformConfig: WaveformRenderConfig;
-  plotConfig: PlotControlConfig;
-
-  setSourceKind: (kind: SourceKind) => void;
-  setTransform: (mode: TransformMode) => void;
+  graphVersion: number;
   setStatus: (status: Status) => void;
   setError: (message?: string) => void;
-  setDocument: (document?: PlotDocument, stats?: PlotStats) => void;
-
-  updateImageConfig: (patch: Partial<ImageTransformConfig>) => void;
-  updateNoiseTransform: (patch: Partial<NoiseTransformConfig>) => void;
-  updateNoiseFieldConfig: (patch: Partial<NoiseFieldConfig>) => void;
-  updateWaveformConfig: (patch: Partial<WaveformRenderConfig>) => void;
-  updatePlotConfig: (patch: Partial<PlotControlConfig>) => void;
-  setPageConfig: (page: PageConfig) => void;
-
-  loadImageFile: (file: File) => Promise<void>;
-  regenerateNoiseField: () => void;
-  loadAudioFile: (file: File) => Promise<void>;
+  selectNode: (nodeId?: string) => void;
+  loadPreset: (presetId: string) => void;
+  updateNodeParameters: (nodeId: string, patch: Record<string, unknown>) => void;
+  connectNodes: (
+    fromNodeId: string,
+    fromPortId: string,
+    toNodeId: string,
+    toPortId: string,
+  ) => void;
+  disconnectEdge: (edgeId: string) => void;
+  setNodeStates: (result: GraphEvaluationResult) => void;
+  addNode: (definitionId: string, position?: NodePosition) => void;
+  removeNode: (nodeId: string) => void;
+  setNodePosition: (nodeId: string, position: NodePosition) => void;
+  autoLayoutNodes: () => void;
+  loadImageIntoNode: (nodeId: string, file: File) => Promise<void>;
+  loadAudioIntoNode: (nodeId: string, file: File) => Promise<void>;
 }
 
-const defaultPageConfig: PageConfig = {
-  presetId: "letter",
-  orientation: "portrait",
-};
+const cloneGraph = (graph: NodeGraph): NodeGraph => ({
+  nodes: graph.nodes.map((node) => ({ ...node, parameters: { ...node.parameters } })),
+  edges: graph.edges.map((edge) => ({ id: edge.id, from: { ...edge.from }, to: { ...edge.to } })),
+});
 
-const defaultPlotConfig: PlotControlConfig = {
-  simplifyTolerance: 1.2,
-  minPathLength: 12,
-  joinTolerance: 8,
-  orderStrategy: "nearest",
-  strokeWidth: 0.3,
-  showTravel: false,
-  marginMm: 15,
-  scale: 0.9,
-  page: defaultPageConfig,
-};
+const ensureEdgeId = (() => {
+  let counter = 0;
+  return () => `edge-${counter += 1}`;
+})();
 
-const defaultImageConfig: ImageTransformConfig = {
-  levels: 6,
-  low: 0.15,
-  high: 0.9,
-  smoothing: 0.4,
-  edgeThreshold: 0.65,
-  hatchSpacing: 12,
-  hatchThreshold: 0.65,
-  hatchAmplitude: 8,
-  hatchSampleStep: 2,
-  gradientLevels: 4,
-  gradientLow: 0.2,
-  gradientHigh: 0.9,
-  crossHatchFamilies: 3,
-  crossHatchAngleDelta: 25,
-  flowSpacing: 16,
-  flowLength: 40,
-  flowStep: 4,
-  flowThreshold: 0.7,
-  halftoneTurns: 20,
-  halftoneDensity: 0.7,
-  voronoiPoints: 180,
-  voronoiRelaxations: 1,
-  softLevels: 8,
-  softBlurRadius: 6,
-  dotSpacing: 20,
-  dotRadius: 4,
-  circleSpacing: 28,
-  circleRadius: 8,
-  circleSides: 20,
-  lineSpacing: 32,
-  lineLength: 35,
-  lineCount: 4,
-  lineAngleJog: 12,
-  triangleSpacing: 40,
-  triangleSize: 18,
-};
 
-const defaultNoiseTransform: NoiseTransformConfig = {
-  thresholds: 7,
-  smoothing: 0.3,
-  interferenceMix: 0.5,
-  secondaryScale: 220,
-  secondaryOctaves: 3,
-};
+const LANE_SEQUENCE: NodeLane[] = ["data", "geometry", "plot", "global"];
+const LANE_X_SPACING = 360;
+const ROW_Y_SPACING = 220;
 
-const defaultNoiseFieldConfig: NoiseFieldConfig = {
-  width: 720,
-  height: 720,
-  scale: 180,
-  octaves: 4,
-  persistence: 0.55,
-  lacunarity: 2,
-  seed: "plotter-lab",
-  offsetX: 0,
-  offsetY: 0,
-};
+function computeDefaultNodePositions(nodes: NodeInstance[]): Record<string, NodePosition> {
+  const laneRows: Record<NodeLane, number> = {
+    data: 0,
+    geometry: 0,
+    plot: 0,
+    global: 0,
+  };
+  const result: Record<string, NodePosition> = {};
+  nodes.forEach((node) => {
+    const lane = nodeLibrary[node.definitionId]?.lane ?? "global";
+    const laneIndex = Math.max(0, LANE_SEQUENCE.indexOf(lane));
+    const row = laneRows[lane];
+    laneRows[lane] += 1;
+    result[node.id] = {
+      x: laneIndex * LANE_X_SPACING,
+      y: row * ROW_Y_SPACING,
+    };
+  });
+  return result;
+}
 
-const defaultWaveformConfig: WaveformRenderConfig = {
-  width: 1200,
-  height: 420,
-  samplePoints: 1600,
-  amplitude: 0.85,
-  smoothingWindow: 3,
-  mode: "single",
-  lineCount: 3,
-  stackSpacing: 80,
-  circleRadiusRatio: 0.35,
-  spiralTurns: 5,
-  spiralInnerRatio: 0.12,
-  spiralOuterRatio: 0.45,
-  spectrumBins: 24,
-  spectrumRadiusRatio: 0.4,
-  ribbonLayers: 12,
-  ribbonOffset: 18,
-  ribbonDrift: 12,
-};
+function suggestPositionForLane(
+  lane: NodeLane,
+  nodes: NodeInstance[],
+  positions: Record<string, NodePosition>,
+): NodePosition {
+  const laneIndex = Math.max(0, LANE_SEQUENCE.indexOf(lane));
+  const laneNodes = nodes.filter(
+    (node) => (nodeLibrary[node.definitionId]?.lane ?? "global") === lane,
+  );
+  const existingRows = laneNodes
+    .map((node) => positions[node.id]?.y ?? -ROW_Y_SPACING)
+    .map((y) => Math.round(y / ROW_Y_SPACING));
+  const nextRow = existingRows.length ? Math.max(...existingRows) + 1 : 0;
+  return {
+    x: laneIndex * LANE_X_SPACING,
+    y: nextRow * ROW_Y_SPACING,
+  };
+}
+
+
+const initialGraph = cloneGraph(graphPresets[0]!.graph);
+const initialPositions = computeDefaultNodePositions(initialGraph.nodes);
 
 export const usePlotterStore = create<PlotterStoreState>((set, get) => ({
-  sourceKind: "image",
-  transform: "image-brightness",
   status: "idle",
-  image: { version: 0 },
-  noise: {
-    version: 0,
-    fieldConfig: defaultNoiseFieldConfig,
-    transformConfig: defaultNoiseTransform,
-  },
-  audio: { version: 0 },
-  imageConfig: defaultImageConfig,
-  waveformConfig: defaultWaveformConfig,
-  plotConfig: defaultPlotConfig,
-
-  setSourceKind: (kind) => set({ sourceKind: kind }),
-  setTransform: (mode) => set({ transform: mode }),
+  graph: initialGraph,
+  presets: graphPresets,
+  assets: {},
+  nodeStates: {},
+  nodePositions: initialPositions,
+  graphVersion: 0,
   setStatus: (status) => set({ status }),
-  setError: (message) => set({ error: message }),
-  setDocument: (document, stats) => set({ document, stats }),
-
-  updateImageConfig: (patch) =>
-    set((state) => ({ imageConfig: { ...state.imageConfig, ...patch } })),
-  updateNoiseTransform: (patch) =>
+  setError: (error) => set({ error }),
+  selectNode: (selectedNodeId) => set({ selectedNodeId }),
+  loadPreset: (presetId) => {
+    const preset = graphPresets.find((entry) => entry.id === presetId);
+    if (!preset) return;
+    const graph = cloneGraph(preset.graph);
+    set({
+      graph,
+      graphVersion: Date.now(),
+      selectedNodeId: undefined,
+      nodeStates: {},
+      nodePositions: computeDefaultNodePositions(graph.nodes),
+      error: undefined,
+    });
+  },
+  updateNodeParameters: (nodeId, patch) => {
     set((state) => ({
-      noise: {
-        ...state.noise,
-        transformConfig: { ...state.noise.transformConfig, ...patch },
+      graph: {
+        ...state.graph,
+        nodes: state.graph.nodes.map((node) =>
+          node.id === nodeId
+            ? { ...node, parameters: { ...node.parameters, ...patch } }
+            : node,
+        ),
       },
-    })),
-  updateNoiseFieldConfig: (patch) =>
+      graphVersion: Date.now(),
+    }));
+  },
+  connectNodes: (fromNodeId, fromPortId, toNodeId, toPortId) => {
+    const definition = nodeLibrary[get().graph.nodes.find((node) => node.id === toNodeId)?.definitionId ?? ""];
+    const inputDef = definition?.inputs.find((input) => input.id === toPortId);
+    set((state) => {
+      let edges = state.graph.edges;
+      if (inputDef && !inputDef.acceptsMultiple) {
+        edges = edges.filter(
+          (edge) => !(edge.to.nodeId === toNodeId && edge.to.portId === toPortId),
+        );
+      }
+      const newEdge: GraphEdge = {
+        id: ensureEdgeId(),
+        from: { nodeId: fromNodeId, portId: fromPortId },
+        to: { nodeId: toNodeId, portId: toPortId },
+      };
+      return {
+        graph: { ...state.graph, edges: [...edges, newEdge] },
+        graphVersion: Date.now(),
+      };
+    });
+  },
+  disconnectEdge: (edgeId) => {
     set((state) => ({
-      noise: {
-        ...state.noise,
-        fieldConfig: { ...state.noise.fieldConfig, ...patch },
+      graph: {
+        ...state.graph,
+        edges: state.graph.edges.filter((edge) => edge.id !== edgeId),
       },
-    })),
-  updateWaveformConfig: (patch) =>
+      graphVersion: Date.now(),
+    }));
+  },
+  setNodeStates: (result) => {
+    set({
+      nodeStates: result.nodeStates,
+      document: result.document,
+      stats: result.stats,
+      status: "idle",
+    });
+  },
+  addNode: (definitionId, position) => {
+    const definition = nodeLibrary[definitionId];
+    if (!definition) return;
+    const node: NodeInstance = {
+      id: `node-${Date.now()}`,
+      definitionId,
+      label: definition.name,
+      parameters: defaultParameters(definitionId),
+      lane: definition.lane,
+    };
     set((state) => ({
-      waveformConfig: { ...state.waveformConfig, ...patch },
-    })),
-  updatePlotConfig: (patch) =>
-    set((state) => ({ plotConfig: { ...state.plotConfig, ...patch } })),
-  setPageConfig: (page) =>
-    set((state) => ({ plotConfig: { ...state.plotConfig, page } })),
-
-  loadImageFile: async (file: File) => {
-    set({ status: "loading", error: undefined, sourceKind: "image" });
+      graph: { ...state.graph, nodes: [...state.graph.nodes, node] },
+      graphVersion: Date.now(),
+      selectedNodeId: node.id,
+      nodePositions: {
+        ...state.nodePositions,
+        [node.id]:
+          position ??
+          suggestPositionForLane(
+            definition.lane,
+            state.graph.nodes,
+            state.nodePositions,
+          ),
+      },
+    }));
+  },
+  removeNode: (nodeId) => {
+    set((state) => ({
+      graph: {
+        nodes: state.graph.nodes.filter((node) => node.id !== nodeId),
+        edges: state.graph.edges.filter(
+          (edge) => edge.from.nodeId !== nodeId && edge.to.nodeId !== nodeId,
+        ),
+      },
+      assets: Object.fromEntries(
+        Object.entries(state.assets).filter(([key]) => key !== nodeId),
+      ),
+      nodePositions: Object.fromEntries(
+        Object.entries(state.nodePositions).filter(([key]) => key !== nodeId),
+      ),
+      graphVersion: Date.now(),
+      selectedNodeId: state.selectedNodeId === nodeId ? undefined : state.selectedNodeId,
+    }));
+  },
+  setNodePosition: (nodeId, position) => {
+    set((state) => ({
+      nodePositions: { ...state.nodePositions, [nodeId]: position },
+    }));
+  },
+  autoLayoutNodes: () => {
+    const graph = get().graph;
+    set({
+      nodePositions: computeDefaultNodePositions(graph.nodes),
+    });
+  },
+  loadImageIntoNode: async (nodeId, file) => {
+    set({ status: "loading", error: undefined });
     try {
       const data = await imageFileToFields(file);
       set((state) => ({
-        image: { ...data, version: Date.now() },
-        transform: state.transform.startsWith("image")
-          ? state.transform
-          : "image-brightness",
         status: "idle",
+        assets: { ...state.assets, [nodeId]: { ...(state.assets[nodeId] ?? {}), image: data } },
+        graphVersion: Date.now(),
       }));
     } catch (error) {
       set({
         status: "idle",
-        error:
-          error instanceof Error ? error.message : "Failed to process image.",
+        error: error instanceof Error ? error.message : "Failed to process image.",
       });
     }
   },
-
-  regenerateNoiseField: () => {
-    const state = get();
-    const field = generateNoiseField(state.noise.fieldConfig);
-    set({
-      sourceKind: "noise",
-      transform: "noise-isolines",
-      noise: {
-        ...state.noise,
-        field,
-        version: Date.now(),
-      },
-    });
-  },
-
-  loadAudioFile: async (file: File) => {
-    set({ status: "loading", error: undefined, sourceKind: "audio" });
+  loadAudioIntoNode: async (nodeId, file) => {
+    set({ status: "loading", error: undefined });
     try {
       const signal = await decodeAudioFile(file);
-      set({
-        audio: { signal, version: Date.now() },
-        transform: "audio-waveform",
+      set((state) => ({
         status: "idle",
-      });
+        assets: { ...state.assets, [nodeId]: { ...(state.assets[nodeId] ?? {}), audio: signal } },
+        graphVersion: Date.now(),
+      }));
     } catch (error) {
       set({
         status: "idle",
-        error:
-          error instanceof Error ? error.message : "Failed to decode audio file.",
+        error: error instanceof Error ? error.message : "Failed to decode audio file.",
       });
     }
   },
 }));
+
+function defaultParameters(definitionId: string) {
+  const definition = nodeLibrary[definitionId];
+  if (!definition) return {};
+  const params: Record<string, unknown> = {};
+  definition.parameters.forEach((param) => {
+    if (param.defaultValue !== undefined) {
+      params[param.id] = param.defaultValue;
+    }
+  });
+  return params;
+}
+
